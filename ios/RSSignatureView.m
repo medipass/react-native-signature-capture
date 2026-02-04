@@ -5,6 +5,17 @@
 #import "PPSSignatureView.h"
 #import "RSSignatureViewManager.h"
 
+#ifdef RCT_NEW_ARCH_ENABLED
+#import <React/RCTConversions.h>
+#import <React/RCTFabricComponentsPlugins.h>
+#import <react/renderer/components/RSSignatureViewSpecs/ComponentDescriptors.h>
+#import <react/renderer/components/RSSignatureViewSpecs/EventEmitters.h>
+#import <react/renderer/components/RSSignatureViewSpecs/Props.h>
+#import <react/renderer/components/RSSignatureViewSpecs/RCTComponentViewHelpers.h>
+
+using namespace facebook::react;
+#endif
+
 #define DEGREES_TO_RADIANS(x) (M_PI * (x) / 180.0)
 
 @implementation RSSignatureView {
@@ -239,5 +250,56 @@
 -(void) erase {
 	[self.sign erase];
 }
+
+#ifdef RCT_NEW_ARCH_ENABLED
++ (ComponentDescriptorProvider)componentDescriptorProvider
+{
+  return concreteComponentDescriptorProvider<RSSignatureViewComponentDescriptor>();
+}
+
+- (void)updateProps:(Props::Shared const &)props oldProps:(Props::Shared const &)oldProps
+{
+  const auto &oldViewProps = *std::static_pointer_cast<RSSignatureViewProps const>(_props);
+  const auto &newViewProps = *std::static_pointer_cast<RSSignatureViewProps const>(props);
+
+  if (oldViewProps.rotateClockwise != newViewProps.rotateClockwise) {
+    _rotateClockwise = newViewProps.rotateClockwise;
+  }
+  if (oldViewProps.square != newViewProps.square) {
+    _square = newViewProps.square;
+  }
+  if (oldViewProps.showBorder != newViewProps.showBorder) {
+    _showBorder = newViewProps.showBorder;
+    if (_loaded) {
+      _border.path = _showBorder ? [UIBezierPath bezierPathWithRect:self.bounds].CGPath : nil;
+    }
+  }
+  if (oldViewProps.showNativeButtons != newViewProps.showNativeButtons) {
+    _showNativeButtons = newViewProps.showNativeButtons;
+    if (_loaded) {
+      saveButton.hidden = !_showNativeButtons;
+      clearButton.hidden = !_showNativeButtons;
+    }
+  }
+  if (oldViewProps.showTitleLabel != newViewProps.showTitleLabel) {
+    _showTitleLabel = newViewProps.showTitleLabel;
+    if (_loaded) {
+      titleLabel.hidden = !_showTitleLabel;
+    }
+  }
+
+  if (oldViewProps.strokeColor != newViewProps.strokeColor) {
+    _strokeColor = RCTUIColorFromSharedColor(newViewProps.strokeColor);
+    if (sign) sign.strokeColor = _strokeColor;
+  }
+
+  if (oldViewProps.backgroundColor != newViewProps.backgroundColor) {
+    _backgroundColor = RCTUIColorFromSharedColor(newViewProps.backgroundColor);
+    if (sign) sign.backgroundColor = _backgroundColor;
+  }
+
+  [super updateProps:props oldProps:oldProps];
+}
+#endif
 
 @end

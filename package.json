@@ -19,6 +19,14 @@
   "peerDependencies": {
     "react-native": ">=0.47"
   },
+  "codegenConfig": {
+    "name": "RSSignatureViewSpecs",
+    "type": "components",
+    "jsSrcsDir": "src/specs",
+    "android": {
+      "javaPackageName": "com.rssignaturecapture"
+    }
+  },
   "author": "RepairShopr",
   "license": "ISC",
   "bugs": {

@@ -3,6 +3,12 @@
 #import <React/RCTBridge.h>
 #import <React/RCTEventDispatcher.h>
 
+#ifdef RCT_NEW_ARCH_ENABLED
+#import <React/RCTConversions.h>
+#import <React/RCTFabricComponentsPlugins.h>
+#import "RSSignatureView.h"
+#endif
+
 @implementation RSSignatureViewManager
 
 @synthesize bridge = _bridge;
@@ -44,6 +50,17 @@ RCT_EXPORT_METHOD(resetImage:(nonnull NSNumber *)reactTag) {
 		[self.signView erase];
 	});
 }
+
+#ifdef RCT_NEW_ARCH_ENABLED
+- (void)handleCommand:(nonnull UIView *)view commandName:(nonnull NSString *)commandName args:(nullable NSArray *)args
+{
+  if ([commandName isEqualToString:@"saveImage"]) {
+    [(RSSignatureView *)view saveImage];
+  } else if ([commandName isEqualToString:@"resetImage"]) {
+    [(RSSignatureView *)view erase];
+  }
+}
+#endif
 
 -(void) publishSaveImageEvent:(NSString *) aTempPath withEncoded: (NSString *) aEncoded {
 	[self.bridge.eventDispatcher

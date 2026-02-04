@@ -2,24 +2,68 @@ def safeExtGet(prop, fallback) {
     rootProject.ext.has(prop) ? rootProject.ext.get(prop) : fallback
 }
 
+def isNewArchitectureEnabled() {
+    return project.hasProperty("newArchEnabled") && project.newArchEnabled == "true"
+}
+
 apply plugin: 'com.android.library'
 
+if (isNewArchitectureEnabled()) {
+    apply plugin: "com.facebook.react"
+}
+
 android {
-    compileSdkVersion safeExtGet('compileSdkVersion', 23)
-    buildToolsVersion safeExtGet('buildToolsVersion', "23.0.1")
+    compileSdkVersion safeExtGet('compileSdkVersion', 33)
+    buildToolsVersion safeExtGet('buildToolsVersion', "33.0.0")
+
+    namespace "com.rssignaturecapture"
 
     defaultConfig {
-        minSdkVersion safeExtGet('minSdkVersion', 16)
-        targetSdkVersion safeExtGet('targetSdkVersion', 22)
+        minSdkVersion safeExtGet('minSdkVersion', 21)
+        targetSdkVersion safeExtGet('targetSdkVersion', 33)
         versionCode 1
         versionName "1.0"
-        ndk {
-            abiFilters "armeabi-v7a", "x86"
+
+        buildConfigField "boolean", "IS_NEW_ARCHITECTURE_ENABLED", isNewArchitectureEnabled().toString()
+    }
+
+    sourceSets {
+        main {
+            if (isNewArchitectureEnabled()) {
+                java.srcDirs += ['src/newarch']
+            } else {
+                java.srcDirs += ['src/oldarch']
+            }
         }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+
+    packagingOptions {
+        excludes = [
+                "META-INF/variable.semantic.metadata",
+                "**/libjsi.so",
+                "**/libc++_shared.so",
+                "**/libreactnativejni.so",
+                "**/libfbjni.so",
+                "**/libyoga.so"
+        ]
     }
 }
 
+repositories {
+    mavenCentral()
+    google()
+}
+
 dependencies {
-    implementation "com.android.support:appcompat-v7:${safeExtGet('supportLibVersion', '23.0.0')}"
+    // noinspection GradleDynamicVersion
     implementation "com.facebook.react:react-native:+"
+    implementation "androidx.appcompat:appcompat:1.4.1"
 }
